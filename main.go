@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -14,23 +15,6 @@ import (
 
 var err error
 var timeLocation, _ = time.LoadLocation("Local")
-
-// CORSMiddleware function
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
-}
 
 func main() {
 	log.Println("Starting server ...")
@@ -57,13 +41,12 @@ func main() {
 		})
 	})
 
-	// router.GET("/get", func(c *gin.Context) {
+	router.GET("/getStationIds", func(c *gin.Context) {
+		stationIDs := model.SelectStationIDs()
+		c.JSON(http.StatusOK, stationIDs)
+	})
 
-	// 	metarArray := model.SelectMetars("CYOO", time.Now(), time.Now())
-	// 	c.JSON(200, metarArray)
-	// })
-
-	router.GET("/get2", func(c *gin.Context) {
+	router.GET("/getMetarListInObervationTimeRange", func(c *gin.Context) {
 		//timeLocation, _ := time.LoadLocation("Local")
 
 		const (
@@ -81,6 +64,7 @@ func main() {
 			return
 		}
 		stationIDs := paramsMap[stationIDsKey]
+		upperStationIDs(&stationIDs)
 		log.Printf("stationIDs: %v %T", stationIDs, stationIDs)
 		log.Printf("length of stationIDs: %v", len(stationIDs))
 
@@ -106,9 +90,50 @@ func main() {
 		} else {
 			toObservationTime = time.Now().In(timeLocation)
 		}
-		metarArray := model.SelectMetars(stationIDs, fromObservationTime, toObservationTime)
+		metarArray := model.SelectMetarListInObervationTimeRange(stationIDs, fromObservationTime, toObservationTime)
+		c.JSON(http.StatusOK, metarArray)
+	})
+
+	//
+	//
+	//
+	router.GET("/getMetarListForLatestNObservations", func(c *gin.Context) {
+		//timeLocation, _ := time.LoadLocation("Local")
+
+		const (
+			stationIDsKey           = "stationId"
+			latestNumberOfMetarsKey = "latestNumberOfMetars"
+		)
+		var paramsMap map[string][]string
+		paramsMap = c.Request.URL.Query()
+		log.Println("paramsMap: ", paramsMap)
+
+		stationIDs, ok := paramsMap[stationIDsKey]
+		if ! /* not */ ok {
+			c.JSON(http.StatusBadRequest, "Missing stationId")
+			return
+		}
+		upperStationIDs(&stationIDs)
+		log.Printf("stationIDs: %v %T", stationIDs, stationIDs)
+		log.Printf("length of stationIDs: %v", len(stationIDs))
+
+		latestNumberOfMetars, ok := paramsMap[latestNumberOfMetarsKey]
+		if ! /* not */ ok {
+			c.JSON(http.StatusBadRequest, "Missing latestNumberOfMetars")
+			return
+		}
+		log.Printf("latestNumberOfMetars: %v %T", latestNumberOfMetars, latestNumberOfMetars)
+		log.Printf("latestNumberOfMetars of stationIDs: %v", len(latestNumberOfMetars))
+		metarArray := model.SelectMetarListForLatestNObservations(stationIDs, latestNumberOfMetars[0])
 		c.JSON(http.StatusOK, metarArray)
 	})
 
 	router.Run(":" + prop.GetString("http-port", "8080"))
+}
+
+func upperStationIDs(stationIDs *[]string) {
+	x := *stationIDs
+	for i, stationID := range x {
+		x[i] = strings.ToUpper(stationID)
+	}
 }
