@@ -1,0 +1,11 @@
+// this fle can contain dependencies in format
+// package: <NAME> [,branch: <BRANCH>][, tag: <TAG>][, revision: <REVISION>]
+// example:
+//   package:github.com/gizak/termui, branch:v2
+
+package:github.com/godror/godror
+package:github.com/jmoiron/sqlx
+package:github.com/magiconair/properties
+package:github.com/gin-gonic/gin
+package:gopkg.in/guregu/null.v3
+package:github.com/gin-contrib/cors 
