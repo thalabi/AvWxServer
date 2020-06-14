@@ -11,6 +11,7 @@ pipeline {
         stage ('Compile') {
             steps {
                 echo "Branch is ${BRANCH_NAME} ..."
+                def root = tool name: 'Go Version 1.14.4', type: 'go'
                 sh '''
                 echo "PATH = ${PATH}"
                 echo "BRANCH_NAME = ${BRANCH_NAME}"
