@@ -40,5 +40,37 @@ pipeline {
                 }
             }
         }
+        stage ('Package') {
+			when {
+			    not {
+			        branch 'master'
+			    }
+			}
+            steps {
+                sh '''
+                jar -cvf AvWxServer-${BRANCH_NAME}.jar application.properties AvWxServer
+                '''
+            }
+		}
+
+        stage ('Deploy') {
+			when {
+			    not {
+			        branch 'master'
+			    }
+			}
+			steps {
+                sh '''
+                REPOSITORY="maven-releases"
+                if [[ $BRANCH_NAME == *"SNAPSHOT"* ]]; then
+                    REPOSITORY="maven-snapshots"
+                fi
+                echo "REPOSITORY = ${REPOSITORY}"
+
+                mvn deploy:deploy-file -DgroupId=com.kerneldc -DartifactId=AvWxServer -Dversion=${BRANCH_NAME} -DgeneratePom=true -Dpackaging=jar -DrepositoryId=kerneldc-nexus -Durl=http://localhost:8081/repository/${REPOSITORY} -Dfile=AvWxServer-${BRANCH_NAME}.jar
+                '''
+            }
+        }
+
     }
 }
