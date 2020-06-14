@@ -40,5 +40,18 @@ pipeline {
                 }
             }
         }
+        stage ('Package') {
+			when {
+			    not {
+			        branch 'master'
+			    }
+			}
+            steps {
+                sh '''
+                jar -cvf AvWxServer-${BRANCH_NAME}.jar application.properties AvWxServer
+                '''
+            }
+		}
+
     }
 }
