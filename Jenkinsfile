@@ -53,5 +53,24 @@ pipeline {
             }
 		}
 
+        stage ('Deploy') {
+			when {
+			    not {
+			        branch 'master'
+			    }
+			}
+			steps {
+                sh '''
+                REPOSITORY="maven-releases"
+                if [[ $BRANCH_NAME == *"SNAPSHOT"* ]]; then
+                    REPOSITORY="maven-snapshots"
+                fi
+                echo "REPOSITORY = ${REPOSITORY}"
+
+                mvn deploy:deploy-file -DgroupId=com.kerneldc -DartifactId=AvWxServer -Dversion=${BRANCH_NAME} -DgeneratePom=true -Dpackaging=jar -DrepositoryId=kerneldc-nexus -Durl=http://localhost:8081/repository/${REPOSITORY} -Dfile=AvWxServer-${BRANCH_NAME}.jar
+                '''
+            }
+        }
+
     }
 }
