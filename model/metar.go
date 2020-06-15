@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strconv"
+	"strings"
 	"log"
 	"time"
 
@@ -88,15 +90,20 @@ func SelectMetarListInObervationTimeRange(stationIDs []string, fromObservationTi
 
 	query, args, err := sqlx.In(sqlStatement, stationIDs, fromObservationTime, toObservationTime)
 	if err != nil {
+		log.Println("Error in excuting sqlx.In()")
 		log.Println(err)
 		return nil
 	}
-	query = Db.Rebind(query)
+	log.Println("After excuting sqlx.In()")
+	//query = Db.Rebind(query)
+	query = oracleRebind(query)
 	err = Db.Select(&metarSlice, query, args...)
 	if err != nil {
+		log.Println("Error in excuting Db.Select()")
 		log.Println(err)
 		return nil
 	}
+	log.Println("After excuting Db.Select()")
 	return metarSlice
 }
 
@@ -162,15 +169,32 @@ func SelectMetarListForLatestNObservations(stationIDs []string, latestNumberOfMe
 
 	query, args, err := sqlx.In(sqlStatement, stationIDs, latestNumberOfMetars)
 	if err != nil {
+		log.Println("Error in excuting sqlx.In()")
 		log.Println(err)
 		return nil
 	}
-	query = Db.Rebind(query)
+	log.Println("After excuting sqlx.In()")
+
+	//query = Db.Rebind(query)
+	query = oracleRebind(query)
+
 	err = Db.Select(&metarSlice, query, args...)
 	if err != nil {
+		log.Println("Error in excuting Db.Select()")
 		log.Println(err)
 		return nil
 	}
+	log.Println("After excuting Db.Select()")
 	log.Print(len(metarSlice))
 	return metarSlice
+}
+
+// Replaces ? with :n bind placeholder
+func oracleRebind(sqlStatement string) string {
+	var i = 0
+	for strings.Index(sqlStatement, "?") > -1 {
+		i++
+		sqlStatement = strings.Replace(sqlStatement, "?", ":"+strconv.Itoa(i), 1)
+	}
+	return sqlStatement
 }
