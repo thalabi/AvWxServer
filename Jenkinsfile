@@ -50,8 +50,8 @@ pipeline {
                 sh '''
                 NOW=$(date -u +"%F %T")
                 cat application.properties
-                sed -i -e 's/@version@/${BRANCH_NAME}/' \
-                    -e 's/@timestamp@/${NOW}/' \
+                sed -i -e "s/@version@/${BRANCH_NAME}/" \
+                    -e "s/@timestamp@/${NOW}/" \
                     application.properties
                 cat application.properties
                 jar -cvf AvWxServer-${BRANCH_NAME}.jar application.properties AvWxServer
