@@ -132,7 +132,7 @@ func main() {
 		buildVersion := prop.GetString("build-version", "N/A")
 		buildTimestamp := prop.GetString("build-timestamp", "N/A")
 
-		c.JSON(http.StatusOK, buildVersion+"_"+buildTimestamp)
+		c.String(http.StatusOK, "%v_%v", buildVersion, buildTimestamp)
 	})
 
 	router.Run(":" + prop.GetString("http-port", "8080"))
