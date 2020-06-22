@@ -128,6 +128,13 @@ func main() {
 		c.JSON(http.StatusOK, metarArray)
 	})
 
+	router.GET("/getBuildVersionAndTimestamp", func(c *gin.Context) {
+		buildVersion := prop.GetString("build-version", "N/A")
+		buildTimestamp := prop.GetString("build-timestamp", "N/A")
+
+		c.JSON(http.StatusOK, buildVersion+"_"+buildTimestamp)
+	})
+
 	router.Run(":" + prop.GetString("http-port", "8080"))
 }
 
