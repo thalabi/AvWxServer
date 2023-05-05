@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/gin-contrib/cors v1.3.1
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.9.0
 	github.com/godror/godror v0.16.1
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/magiconair/properties v1.8.1
